@@ -94,13 +94,48 @@ And that's it ! If you have already a `Config` type defined, all you need is to 
 CLI arguments can be parsed using :
 `--arg=<value>` or `--arg value` or if the type is a bool `--arg` (to set to true).
 
+The above types will generate the following configs and help message :
+```sh
+$ zig build run -- --help
+clig-example - Example
+CLIG Example CLI application that can do nothing ;)
+
+Arguments :
+
+--flag <u8>
+Default: 5 - Flag that does strictly nothing
+--string <string>
+Default: default value - Might want to set a variable as a string as well
+--randoming <true_random,prng,cprng>
+Default: true_random - Sets the useless type of randomness to use
+
+Section advanced
+  --advanced.testify <bool>
+  Default: false - Type-ception is fun
+  --advanced.random <u8>
+  Default: 76 - Sets the randomness as to how much do nothing
+```
+
+```json
+$ cat config.json
+{
+	"flag": 5,
+	"string": "default value",
+	"randoming": "true_random",
+	"advanced": {
+		"testify": false,
+		"random": 76
+	}
+}
+```
+
 
 ## TODOs
 - [x] Config file loading
 - [x] Argument loading
 - [x] `=` in arguments loading
 - [x] Comptime Help
+- [x] More detailed documentation
 - [ ] ENV arguments
 - [ ] Better Errors
 - [ ] Revamp the example
-- [ ] More detailed documentation
