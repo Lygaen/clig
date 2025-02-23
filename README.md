@@ -100,7 +100,7 @@ CLI arguments can be parsed using :
 - [x] Argument loading
 - [x] `=` in arguments loading
 - [x] Comptime Help
+- [x] More detailed documentation
 - [ ] ENV arguments
 - [ ] Better Errors
 - [ ] Revamp the example
-- [ ] More detailed documentation
