@@ -1,13 +1,43 @@
+//! Main entry-point for the CLIG Library which provides :
+//!   - Config Loading
+//!   - Compile-Time evaluation
+//!   - CLI Argument Loading
+//!
+//! In the Config type, if including a struct, it will be parsed
+//! under the CLI argument `--<struct-name>.<field-name> <field-value>`
+
 const std = @import("std");
 const testing = std.testing;
 
+/// The Init Options for displaying the
+/// `--help` message
+pub const HelpOptions = struct {
+    /// The title of the CLI application, should be
+    /// short such as 'CLIG App' or 'Packet Analyzer'
+    title: []const u8,
+    /// The full on description of the application, should
+    /// include '\n' for new-lines. Should be longer than the title,
+    /// and explaining the general usage of the CLI app.
+    preambule: []const u8,
+    /// The Helper type (see README.md) that should satisfy :
+    ///   - All fields in the Config type should be in the helper
+    ///   - All fields should be of type []const u8 or struct
+    ///   - All fields should be default-initialized with the description
+    ///
+    /// CLIG will then traverse the Config type, generating the help message
+    /// at compile-time using the information pulled from the helper type.
+    description: type,
+};
+
+/// The Init Options for loading a config file for the
+/// CLIG library.
 pub const InitOptions = struct {
+    /// The filepath (starting from the CWD) of the
+    /// config file that should be written to and read from
     filepath: []const u8 = "./config.json",
-    help: struct {
-        title: []const u8,
-        preambule: []const u8,
-        description: type,
-    },
+
+    /// The `--help` CLI message options
+    help: HelpOptions,
 };
 
 fn loadFromFile(Config: type, allocator: std.mem.Allocator, options: InitOptions) !?Config {
@@ -278,6 +308,10 @@ fn showHelpMessage(Config: type, allocator: std.mem.Allocator, options: InitOpti
 
 var arena: std.heap.ArenaAllocator = undefined;
 
+/// Initializes the CLIG parsing things, returning the wanted Config type both
+/// read from disk and parsed from CLI arguments.
+///
+/// The CLI arguments take priority over the contents of the config file.
 pub fn init(Config: type, allocator: std.mem.Allocator, options: InitOptions) !Config {
     arena = std.heap.ArenaAllocator.init(allocator);
 
@@ -289,6 +323,7 @@ pub fn init(Config: type, allocator: std.mem.Allocator, options: InitOptions) !C
     return config;
 }
 
+/// Frees any memory, **INCLUDING THE CONFIG** from the allocator.
 pub fn deinit() void {
     arena.deinit();
 }
