@@ -28,17 +28,15 @@ pub fn build(b: *std.Build) void {
         run_exe.addArgs(args);
     }
 
-    const run_step = b.step("example", "Run the example application");
+    const run_step = b.step("run", "Run the example application");
     run_step.dependOn(&run_exe.step);
 
-    const lib_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/root.zig"),
-        .target = target,
-        .optimize = optimize,
+    const install_docs = b.addInstallDirectory(.{
+        .source_dir = lib.getEmittedDocs(),
+        .install_dir = .prefix,
+        .install_subdir = "docs",
     });
 
-    const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
-
-    const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_lib_unit_tests.step);
+    const docs_step = b.step("docs", "Install docs to zig prefix");
+    docs_step.dependOn(&install_docs.step);
 }
