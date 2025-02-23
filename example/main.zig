@@ -29,12 +29,16 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    _ = clig.init(Config, allocator, .{ .help = .{
-        .title = "Example",
-        .preambule = "CLIG Example CLI application that can do nothing ;)",
-        .description = ConfigHelp,
-    } }) catch |err| switch (err) {
+    _ = clig.init(Config, allocator, .{
+        .help = .{
+            .title = "Example",
+            .preambule = "CLIG Example CLI application that can do nothing ;)",
+            .description = ConfigHelp,
+        },
+    }) catch |err| switch (err) {
         error.HelpMessageShown => return,
         else => return err,
     };
+
+    defer clig.deinit();
 }
