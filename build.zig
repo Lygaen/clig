@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.root_module.addImport("clig", &lib.root_module);
+    exe.root_module.addImport("clig", lib.root_module);
 
     b.installArtifact(exe);
 

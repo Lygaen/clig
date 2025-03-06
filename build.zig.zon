@@ -1,7 +1,8 @@
 .{
-    .name = "clig",
+    .name = .clig,
+    .fingerprint = 0x2ef391a0f1576c27,
     .version = "0.2.0",
-    //.minimum_zig_version = "0.11.0",
+    .minimum_zig_version = "0.14.0",
     .dependencies = .{},
     .paths = .{
         "build.zig",

@@ -1,6 +1,6 @@
 ![Build](https://github.com/Lygaen/clig/actions/workflows/build.yml/badge.svg)
 ![Docs](https://github.com/Lygaen/clig/actions/workflows/pages.yml/badge.svg)
-# CLI + Config for zig !
+# CLI + Config for zig 0.14.0 !
 
 Many of the current libraries in zig only support for CLI command arguments or config loading but not both at the same time.
 

@@ -78,7 +78,7 @@ const ArgsError = error{
 
 fn innerParseArgument(Field: type, comptime fieldName: []const u8, arg0: []const u8, arg1: ?[]const u8, Config: type, value: *Config, allocator: std.mem.Allocator) !void {
     switch (@typeInfo(Field)) {
-        .Bool => {
+        .bool => {
             if (arg1) |flag| {
                 const isTrue = std.mem.eql(u8, flag, "true");
 
@@ -92,32 +92,32 @@ fn innerParseArgument(Field: type, comptime fieldName: []const u8, arg0: []const
             }
             return;
         },
-        .Int => {
+        .int => {
             if (arg1 == null)
                 return error.MissingArgumentValue;
 
             @field(value.*, fieldName) = try std.fmt.parseInt(Field, arg1.?, 0);
             return;
         },
-        .Float => {
+        .float => {
             if (arg1 == null)
                 return error.MissingArgumentValue;
 
             @field(value.*, fieldName) = try std.fmt.parseFloat(Field, arg1.?);
             return;
         },
-        .Pointer => |arr| {
+        .pointer => |arr| {
             if (arg1 == null)
                 return error.MissingArgumentValue;
 
-            if (@typeInfo(arr.child).Int.bits != 8) {
+            if (@typeInfo(arr.child).int.bits != 8) {
                 @compileError("Unsupported array type !");
             }
 
             @field(value.*, fieldName) = try allocator.dupe(u8, arg1.?);
             return;
         },
-        .Struct => |str| {
+        .@"struct" => |str| {
             const hasNextMember = std.mem.indexOf(u8, arg0, ".");
 
             if (hasNextMember == null)
@@ -142,7 +142,7 @@ fn innerParseArgument(Field: type, comptime fieldName: []const u8, arg0: []const
 
             return error.UnkownArgument;
         },
-        .Enum => {
+        .@"enum" => {
             if (arg1 == null)
                 return error.MissingArgumentValue;
 
@@ -238,16 +238,16 @@ fn innerPrintHelp(comptime prefix: [:0]const u8, Config: std.builtin.Type.Struct
     const indstr = "  " ** indent;
     comptime var result: [:0]const u8 = "";
     comptime switch (@typeInfo(Config.type)) {
-        .Pointer => {
-            const description: *align(Helper.alignment) const []const u8 = @ptrCast(@alignCast(Helper.default_value));
-            const defValue: *align(Config.alignment) const Config.type = @ptrCast(@alignCast(Config.default_value));
+        .pointer => {
+            const description: *align(Helper.alignment) const []const u8 = @ptrCast(@alignCast(Helper.default_value_ptr));
+            const defValue: *align(Config.alignment) const Config.type = @ptrCast(@alignCast(Config.default_value_ptr));
 
             result = result ++ std.fmt.comptimePrint("{s}--{s}{s} <string>\n", .{ indstr, prefix, Config.name });
             result = result ++ std.fmt.comptimePrint("{s}Default: {s} - {s}\n", .{ indstr, defValue.*, description.* });
         },
-        .Enum => {
-            const description: *align(Helper.alignment) const []const u8 = @ptrCast(@alignCast(Helper.default_value));
-            const defValue: *align(Config.alignment) const Config.type = @ptrCast(@alignCast(Config.default_value));
+        .@"enum" => {
+            const description: *align(Helper.alignment) const []const u8 = @ptrCast(@alignCast(Helper.default_value_ptr));
+            const defValue: *align(Config.alignment) const Config.type = @ptrCast(@alignCast(Config.default_value_ptr));
             const tag = std.enums.tagName(Config.type, defValue.*);
 
             var tags: [:0]const u8 = "";
@@ -259,11 +259,11 @@ fn innerPrintHelp(comptime prefix: [:0]const u8, Config: std.builtin.Type.Struct
             result = result ++ std.fmt.comptimePrint("{s}--{s}{s} <{s}>\n", .{ indstr, prefix, Config.name, tags[1..] });
             result = result ++ std.fmt.comptimePrint("{s}Default: {s} - {s}\n", .{ indstr, tag.?, description.* });
         },
-        .Struct => |str| {
+        .@"struct" => |str| {
             result = result ++ std.fmt.comptimePrint("\n{s}Section {s}\n", .{ indstr, Config.name });
             const nprefix = prefix ++ std.fmt.comptimePrint("{s}.", .{Config.name});
             for (str.fields) |field| {
-                for (@typeInfo(Helper.type).Struct.fields) |helper| {
+                for (@typeInfo(Helper.type).@"struct".fields) |helper| {
                     if (std.mem.eql(u8, helper.name, field.name)) {
                         result = result ++ innerPrintHelp(nprefix, field, helper, indent + 1);
                         break;
@@ -272,8 +272,8 @@ fn innerPrintHelp(comptime prefix: [:0]const u8, Config: std.builtin.Type.Struct
             }
         },
         else => {
-            const description: *align(Helper.alignment) const []const u8 = @ptrCast(@alignCast(Helper.default_value));
-            const defValue: *align(Config.alignment) const Config.type = @ptrCast(@alignCast(Config.default_value));
+            const description: *align(Helper.alignment) const []const u8 = @ptrCast(@alignCast(Helper.default_value_ptr));
+            const defValue: *align(Config.alignment) const Config.type = @ptrCast(@alignCast(Config.default_value_ptr));
 
             result = result ++ std.fmt.comptimePrint("{s}--{s}{s} <{s}>\n", .{ indstr, prefix, Config.name, @typeName(Config.type) });
             result = result ++ std.fmt.comptimePrint("{s}Default: {} - {s}\n", .{ indstr, defValue.*, description.* });
@@ -292,9 +292,9 @@ fn showHelpMessage(Config: type, allocator: std.mem.Allocator, options: InitOpti
 
     std.debug.print("Arguments :\n\n", .{});
 
-    inline for (@typeInfo(Config).Struct.fields) |field| {
+    inline for (@typeInfo(Config).@"struct".fields) |field| {
         comptime var found = false;
-        inline for (@typeInfo(options.help.description).Struct.fields) |helper| {
+        inline for (@typeInfo(options.help.description).@"struct".fields) |helper| {
             if (comptime std.mem.eql(u8, field.name, helper.name)) {
                 std.debug.print("{s}", .{innerPrintHelp("", field, helper, 0)});
                 found = true;
